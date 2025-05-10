@@ -71,54 +71,38 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentConversation, user, socket]);
 
+  // Update socket connection to use localStorage token
   useEffect(() => {
     if (!user) return;
     
-    console.log("ChatContext: User detected, attempting to connect socket to:", SOCKET_URL);
-    console.log("User details:", user);
+    // Disconnect any existing socket
+    if (socket) {
+      socket.disconnect();
+    }
     
-    const token = localStorage.getItem('authToken');
+    // Get token from localStorage
+    const token = localStorage.getItem('token');
+    
     if (!token) {
-      console.error("No auth token found in localStorage");
-      setLoading(false); // Prevent infinite spinner
+      console.error('No token found for socket connection');
       return;
     }
-        
+    
+    console.log('Creating new socket connection with token');
     const newSocket = io(SOCKET_URL, {
-      // For Socket.IO, use both approaches for maximum compatibility
-      auth: { token: localStorage.getItem('authToken') || '' },
-      withCredentials: true, // This will send cookies
-      reconnection: true,
+      auth: { token },
+      withCredentials: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 20000,
-      transports: ['websocket', 'polling']
-    });
-    
-    // Add socket connection debugging
-    newSocket.on('connect', () => {
-      console.log("Socket connected successfully!");
-      newSocket.emit('get_online_users');
-    });
-    
-    // More detailed socket error logging
-    newSocket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err.message);
-      // Ensure we don't get stuck in loading state on socket error
-      setLoading(false);
-    });
-    
-    newSocket.on('disconnect', (reason) => {
-      if (reason === 'io server disconnect') {
-        newSocket.connect();
-      }
+      transports: ['websocket']
     });
     
     setSocket(newSocket);
     
     return () => {
-      newSocket.disconnect();
+      if (newSocket) {
+        newSocket.disconnect();
+      }
     };
   }, [user]);
   

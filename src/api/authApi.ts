@@ -66,13 +66,19 @@ export const verifyToken = async () => {
     const token = localStorage.getItem('token');
     
     if (!token) {
+      console.log('No token found in localStorage');
       return null;
     }
     
-    // Use POST request with token in body
-    const response = await api.post('/api/v1/auth/verify', { token });
+    const response = await api.get('/api/v1/auth/verify', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
     return response.data;
   } catch (error) {
+    console.error('Token verification failed:', error);
     localStorage.removeItem('token');
     return null;
   }

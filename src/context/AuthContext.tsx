@@ -8,7 +8,7 @@ import { loginUser, registerUser, verifyUser } from '../api/authApi';
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  login: async () => {},
+  login: async () => false, // Return false as default
   register: async () => {},
   logout: () => {},
   error: null
@@ -24,12 +24,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        console.log("Checking authentication status...");
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          console.log("No token found in localStorage");
+          setLoading(false);
+          return;
+        }
+        
+        console.log("Token found, verifying...");
         const userData = await verifyUser();
         if (userData && userData._id) {
+          console.log("User verified successfully:", userData._id);
           setUser(userData);
+        } else {
+          console.log("Invalid user data received from verification");
+          localStorage.removeItem('token');
         }
       } catch (err) {
         console.error('Authentication error:', err);
+        localStorage.removeItem('token');
       } finally {
         setLoading(false);
       }
@@ -38,42 +53,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuthStatus();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setError(null);
-      console.log("Logging in...");
+      console.log("Attempting login for", email);
       
-      // First, make login API call which sets an HTTP-only cookie
       const response = await loginUser(email, password);
-      console.log("Login response:", response);
+      console.log("Login response received");
       
-      // Don't create fake tokens - wait for verification to confirm auth is successful
-      console.log("Verifying user...");
-      try {
+      // If token is in response, save it to localStorage
+      if (response.token) {
+        console.log("Token found in response, storing in localStorage");
+        localStorage.setItem('token', response.token);
+        
+        // Verify the user to get user data
         const userData = await verifyUser();
-        console.log("User verification result:", userData);
+        console.log("User verification completed");
         
         if (userData && userData._id) {
-          // Only now store a token for Socket.IO
-          localStorage.setItem('authToken', userData.token || `user-${userData._id}-${Date.now()}`);
-          
+          console.log("User verification successful, setting user:", userData._id);
           setUser(userData);
-          console.log("User set in state, navigating to home");
           navigate('/');
+          return true; // Login successful
         } else {
-          throw new Error("Invalid user data received from verification");
+          console.error("Invalid user data after verification");
+          throw new Error("Authentication failed after login");
         }
-      } catch (verifyErr) {
-        console.error("Verification error:", verifyErr);
-        setError("Authentication failed after login. Please try again.");
+      } else {
+        console.error("No token received in login response");
+        throw new Error("No authentication token received");
       }
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || 'Login failed');
+      return false; // Login failed
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string): Promise<void> => {
     try {
       setError(null);
       await registerUser(name, email, password);
@@ -84,9 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    // Clear both cookie and localStorage
-    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('token');
     setUser(null);
     navigate('/login');
   };
