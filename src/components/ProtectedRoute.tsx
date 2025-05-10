@@ -1,4 +1,3 @@
-// Protected route component
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { Center, Spinner } from '@chakra-ui/react';

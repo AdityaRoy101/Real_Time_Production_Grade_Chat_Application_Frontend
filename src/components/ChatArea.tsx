@@ -300,7 +300,7 @@ const ChatArea = () => {
           right={0} 
           bottom={0}
           opacity={0.05}
-          bg="gray.100"  // Simple solid color background
+          bg="gray.100"
           zIndex={-1}
         />
         <Box

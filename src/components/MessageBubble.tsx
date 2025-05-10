@@ -77,7 +77,6 @@ const MessageBubble = ({ message, isOwnMessage, senderName }: MessageBubbleProps
         borderRadius="md"
         position="relative"
         boxShadow="0 1px 1px rgba(0,0,0,0.1)"
-        // Triangle for WhatsApp bubble effect
         _before={{
           content: '""',
           position: 'absolute',

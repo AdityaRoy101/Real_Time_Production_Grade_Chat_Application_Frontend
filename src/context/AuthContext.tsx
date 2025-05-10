@@ -1,4 +1,3 @@
-// Authentication context
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContextType, User } from '../types/auth';
@@ -8,7 +7,7 @@ import { loginUser, registerUser, verifyUser } from '../api/authApi';
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  login: async () => false, // Return false as default
+  login: async () => false,
   register: async () => {},
   logout: () => {},
   error: null
@@ -24,16 +23,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        console.log("Checking authentication status...");
         const token = localStorage.getItem('token');
         
         if (!token) {
-          console.log("No token found in localStorage");
           setLoading(false);
           return;
         }
         
-        // Check if token is a placeholder value instead of JWT
         if (token.startsWith('auth-session-')) {
           console.warn("Found placeholder token instead of JWT, authentication will fail");
           localStorage.removeItem('token');
@@ -41,13 +37,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         
-        console.log("JWT token found, verifying...");
         const userData = await verifyUser();
         if (userData && userData._id) {
-          console.log("User verified successfully:", userData._id);
           setUser(userData);
         } else {
-          console.log("Invalid user data received from verification");
           localStorage.removeItem('token');
         }
       } catch (err) {
@@ -64,36 +57,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setError(null);
-      console.log("Attempting login for", email);
       
-      // Login API call should return token in response
       const loginResponse = await loginUser(email, password);
-      console.log("Login response received", loginResponse);
       
       if (loginResponse.error) {
         setError(loginResponse.error);
         return false;
       }
       
-      // Store the actual JWT token from the response
       if (loginResponse.token) {
-        console.log("JWT token received, storing in localStorage");
         localStorage.setItem('token', loginResponse.token);
       } else {
         console.error("No token received in login response");
         return false;
       }
       
-      // Verify the user to get user data using the JWT token
       try {
         const userData = await verifyUser();
-        console.log("User verification completed");
         
         if (userData && userData._id) {
-          console.log("User verification successful, setting user:", userData._id);
           setUser(userData);
           navigate('/');
-          return true; // Login successful
+          return true;
         } else {
           console.error("Invalid user data after verification");
           throw new Error("Authentication failed after login");
@@ -105,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || 'Login failed');
-      return false; // Login failed
+      return false;
     }
   };
 

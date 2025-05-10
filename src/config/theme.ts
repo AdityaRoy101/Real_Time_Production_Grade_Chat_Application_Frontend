@@ -1,4 +1,3 @@
-// Chat App UI theme configuration
 import { extendTheme } from '@chakra-ui/react';
 
 const theme = extendTheme({

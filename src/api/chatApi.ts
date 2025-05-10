@@ -1,4 +1,3 @@
-// Chat API calls
 import api from './axiosConfig';
 
 export const fetchConversations = async (userId: string, token?: string) => {
@@ -7,7 +6,6 @@ export const fetchConversations = async (userId: string, token?: string) => {
       'Content-Type': 'application/json'
     };
     
-    // Add Authorization header if token is provided
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }

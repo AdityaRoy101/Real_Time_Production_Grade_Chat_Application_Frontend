@@ -5,7 +5,7 @@ import { ChatContextType, Conversation, Message, TypingUser, User } from '../typ
 import { SOCKET_URL } from '../config/constants';
 import { fetchConversations, fetchMessages, markMessagesAsRead as markMessagesAsReadApi, sendMessageApi, fetchAllUsers } from '../api/chatApi';
 
-// Create context with default values
+// Created context with default values
 const ChatContext = createContext<ChatContextType>({
   socket: null,
   conversations: [],
@@ -71,16 +71,13 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentConversation, user, socket]);
 
-  // Update socket connection to use localStorage token
   useEffect(() => {
     if (!user) return;
     
-    // Disconnect any existing socket
     if (socket) {
       socket.disconnect();
     }
     
-    // Get token from localStorage
     const token = localStorage.getItem('token');
     
     if (!token) {
@@ -88,13 +85,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
-    // Validate token is a proper JWT (should be a long string, not a placeholder)
     if (token.startsWith('auth-session-')) {
       console.error('Invalid token format for socket connection');
       return;
     }
     
-    console.log('Creating new socket connection with token');
     const newSocket = io(SOCKET_URL, {
       auth: { token },
       withCredentials: true,
@@ -116,15 +111,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     if (!socket || !user) return;
     
     const getConversations = async () => {
-      try {
-        console.log("Fetching conversations...");
-        console.log(`User ID: ${user?._id}`); // Fixed log to show actual ID
-        
-        // Add token from localStorage as an alternative to cookies
+      try {        
         const token = localStorage.getItem('authToken') || undefined;
         const conversationsData = await fetchConversations(user?._id, token);
         
-        console.log("Conversations fetched successfully:", conversationsData);
         setConversations(conversationsData);
         setLoading(false);
       } catch (err) {
@@ -293,11 +283,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentConversation, messages.length, markMessagesAsRead]);
 
-  // Add a safety timeout to prevent endless spinner
   useEffect(() => {
     if (loading) {
       const safetyTimeout = setTimeout(() => {
-        console.log("Forcing loading state to false after timeout");
         setLoading(false);
       }, 10000); // 10 seconds timeout
       

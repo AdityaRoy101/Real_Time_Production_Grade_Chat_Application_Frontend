@@ -1,5 +1,3 @@
-// Chat related types
-// Defining the User interface for chat context
 export interface User {
   _id: string;
   name: string;
