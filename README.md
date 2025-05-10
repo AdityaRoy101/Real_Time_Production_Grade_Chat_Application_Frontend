@@ -1,8 +1,6 @@
 # Real-Time Production Grade Chat Application Frontend
 A modern, real-time chat application built with React, TypeScript, and Chakra UI. This frontend application provides a rich user experience with real-time messaging, online status indicators, typing notifications, and read receipts.
 
-<img alt="Chat Application Screenshot" src="https://via.placeholder.com/800x450.png?text=Chat+App+Screenshot">
-
 🚀 Features
 💬 Real-Time Messaging - Instant message delivery using Socket.IO
 🔐 User Authentication - Secure JWT-based authentication
@@ -28,14 +26,16 @@ Prerequisites
 Node.js (v14 or newer)
 npm or yarn
 Backend API running (see backend repository)
+
 Getting Started
 Clone the repository
-Install dependencies
+Install dependencies -> npm i
 Set up environment variables
 Create a .env file in the root directory:
 
-Start the development server
-Build for production
+Start the development server -> npm start
+Build for production -> npm run build
+
 🏗️ Project Structure
 🔒 Authentication Flow
 User registers or logs in
@@ -62,10 +62,5 @@ End-to-end encryption
 Voice/video calls
 📜 License
 This project is licensed under the GNU General Public License v3.0 - see the LICENSE file for details.
-
-📧 Contact
-Your Name - your.email@example.com
-
-Project Link: https://github.com/yourusername/Real_Time_Production_Grade_Chat_Application_Frontend
 
 Made with ❤️ using React, TypeScript, and Socket.IO
