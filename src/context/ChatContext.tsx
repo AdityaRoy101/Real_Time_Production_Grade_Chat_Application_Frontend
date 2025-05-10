@@ -124,11 +124,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     
     const getConversations = async () => {
       try {
-        const conversationsData = await fetchConversations(user._id);
+        console.log("Fetching conversations...");
+        console.log(`User: ${user}`);
+        const conversationsData = await fetchConversations(user?._id);
+        console.log("Conversations fetched successfully:", conversationsData);
         setConversations(conversationsData);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching conversations:', err);
+        // Add this to avoid getting stuck in the loading state
         setLoading(false);
       }
     };
