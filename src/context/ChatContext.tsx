@@ -74,19 +74,12 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) return;
     
-    console.log("Attempting to connect socket to:", SOCKET_URL);
+    console.log("ChatContext: User detected, attempting to connect socket to:", SOCKET_URL);
+    console.log("User details:", user);
     
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
-      return null;
-    };
-    
-    // Try localStorage for token first, fall back to cookie
-    const token = localStorage.getItem('authToken') || getCookie('token');
+    const token = localStorage.getItem('authToken');
     if (!token) {
-      console.error("No auth token found in localStorage or cookies");
+      console.error("No auth token found in localStorage");
       setLoading(false); // Prevent infinite spinner
       return;
     }

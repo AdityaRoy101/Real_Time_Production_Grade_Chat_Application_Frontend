@@ -23,6 +23,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [isPending, setIsPending] = useState(false);
   const { login, error } = useAuth();
   
   const validateEmail = (email: string) => {
@@ -63,7 +64,12 @@ const Login = () => {
     const isPasswordValid = validatePassword(password);
     
     if (isEmailValid && isPasswordValid) {
-      await login(email, password);
+      setIsPending(true);
+      try {
+        await login(email, password);
+      } finally {
+        setIsPending(false);
+      }
     }
   };
   
@@ -106,7 +112,13 @@ const Login = () => {
                 <FormErrorMessage>{passwordError}</FormErrorMessage>
               </FormControl>
               
-              <Button type="submit" colorScheme="blue" size="lg">
+              <Button 
+                type="submit" 
+                colorScheme="blue" 
+                size="lg"
+                isLoading={isPending}
+                loadingText="Logging in..."
+              >
                 Login
               </Button>
               

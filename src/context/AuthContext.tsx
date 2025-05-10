@@ -41,20 +41,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       setError(null);
+      console.log("Logging in...");
       const response = await loginUser(email, password);
+      
+      console.log("Login response:", response);
       
       // Store token in localStorage
       if (response && response.token) {
         localStorage.setItem('authToken', response.token);
         
-        const userData = await verifyUser();
-        
-        if (userData && userData._id) {
-          setUser(userData);
-          navigate('/');
+        console.log("Token stored, verifying user...");
+        try {
+          const userData = await verifyUser();
+          console.log("User verification result:", userData);
+          
+          if (userData && userData._id) {
+            setUser(userData);
+            console.log("User set in state, navigating to home");
+            navigate('/');
+          } else {
+            throw new Error("Invalid user data received from verification");
+          }
+        } catch (verifyErr) {
+          console.error("Verification error:", verifyErr);
+          setError("Authentication failed after login. Please try again.");
         }
+      } else {
+        throw new Error("No token received from server");
       }
     } catch (err: any) {
+      console.error("Login error:", err);
       setError(err.message || 'Login failed');
     }
   };

@@ -10,32 +10,42 @@ const api = axios.create({
   },
 });
 
-// Add request interceptor to add token from localStorage to all requests
+// Add request interceptor with better logging
 api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('authToken');
     if (token) {
+      console.log("Adding auth token to request");
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.log("No auth token available for request");
     }
     
-    console.log(`Making ${config.method?.toUpperCase() || 'GET'} request to: ${config.url}`);
+    console.log(`Making ${config.method?.toUpperCase() || 'GET'} request to: ${config.baseURL}${config.url}`);
     return config;
   },
   error => {
+    console.error("Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
 
-// Enhanced error handling
+// Add more detailed response logging
 api.interceptors.response.use(
-  response => response,
+  response => {
+    console.log(`Response from ${response.config.url}:`, response.status);
+    return response;
+  },
   error => {
+    // More detailed error logging
     if (error.response) {
-      console.error(`API Error ${error.response.status}:`, error.response.data);
-      // Handle 401 Unauthorized by redirecting to login
+      console.error(`API Error ${error.response.status} for ${error.config?.url}:`, error.response.data);
       if (error.response.status === 401) {
-        console.log('Unauthorized access, redirecting to login...');
-        window.location.href = '/login';
+        console.log('Unauthorized access, clearing token and redirecting to login...');
+        localStorage.removeItem('authToken');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     } else if (error.request) {
       console.error('Network Error - No response received:', error.request);
