@@ -137,7 +137,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         console.log(`User ID: ${user?._id}`); // Fixed log to show actual ID
         
         // Add token from localStorage as an alternative to cookies
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken') || undefined;
         const conversationsData = await fetchConversations(user?._id, token);
         
         console.log("Conversations fetched successfully:", conversationsData);
