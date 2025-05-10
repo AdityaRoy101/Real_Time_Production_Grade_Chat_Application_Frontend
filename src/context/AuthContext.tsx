@@ -45,26 +45,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // First, make login API call which sets an HTTP-only cookie
       const response = await loginUser(email, password);
-      
       console.log("Login response:", response);
       
-      // Store a token copy in localStorage (for socket.io)
-      // If backend also sends token in response body, use that
-      // Otherwise, generate a dummy token just for socket.io
-      if (response?.token) {
-        localStorage.setItem('authToken', response.token);
-      } else {
-        // Create a timestamp-based token marker 
-        localStorage.setItem('authToken', `session-${Date.now()}`);
-      }
-      
-      // Verify the user (this will use the HTTP-only cookie automatically)
+      // Don't create fake tokens - wait for verification to confirm auth is successful
       console.log("Verifying user...");
       try {
         const userData = await verifyUser();
         console.log("User verification result:", userData);
         
         if (userData && userData._id) {
+          // Only now store a token for Socket.IO
+          localStorage.setItem('authToken', userData.token || `user-${userData._id}-${Date.now()}`);
+          
           setUser(userData);
           console.log("User set in state, navigating to home");
           navigate('/');

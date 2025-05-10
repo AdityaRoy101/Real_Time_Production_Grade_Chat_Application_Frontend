@@ -6,7 +6,20 @@ export const loginUser = async (email: string, password: string) => {
     console.log("Making login API call...");
     const res = await api.post('/api/v1/auth/login', { email, password });
     console.log("Login API response:", res.data);
-    return res.data;
+    
+    // Extract token from Authorization header if available
+    const authHeader = res.headers?.authorization || res.headers?.Authorization;
+    let token = null;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+      console.log("Token extracted from response headers");
+    }
+    
+    return {
+      ...res.data,
+      token // Add token to the response if found in headers
+    };
   } catch (error: any) {
     console.error('Login API error:', error);
     throw new Error(error.response?.data?.error || 'Login failed');
@@ -27,6 +40,17 @@ export const verifyUser = async () => {
     console.log("Verifying user authentication...");
     const res = await api.get('/api/v1/auth/verify');
     console.log("Verification result:", res.data);
+    
+    // Extract token from Authorization header if available
+    const authHeader = res.headers?.authorization || res.headers?.Authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      return {
+        ...res.data,
+        token // Add token to user data if found in headers
+      };
+    }
+    
     return res.data;
   } catch (error: any) {
     console.error('Verification error:', error);
