@@ -331,8 +331,8 @@ const ChatArea = () => {
         right={0} 
         bottom={0}
         opacity={0.05}
-        bgImage="url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be8374b5f565fa3f473e05dbbe8c3a.png')"
-        bgRepeat="repeat"
+        bgColor="gray.100"
+        bgGradient="linear(to-r, gray.50, gray.100)"
         zIndex={-1}
       />
       
@@ -370,9 +370,8 @@ const ChatArea = () => {
         overflowY="auto"
         ref={messagesContainerRef}
         onScroll={debouncedHandleScroll}
-        bgImage="url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')"
-        bgRepeat="repeat"
-        bgSize="contain"
+        bg="gray.50"
+        bgGradient="linear(to-b, gray.50, white)"
       >
         {localLoadingMessages && (
           <Center py={4}>
