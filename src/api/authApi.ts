@@ -7,19 +7,8 @@ export const loginUser = async (email: string, password: string) => {
     const res = await api.post('/api/v1/auth/login', { email, password });
     console.log("Login API response:", res.data);
     
-    // Extract token from Authorization header if available
-    const authHeader = res.headers?.authorization || res.headers?.Authorization;
-    let token = null;
-    
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.substring(7);
-      console.log("Token extracted from response headers");
-    }
-    
-    return {
-      ...res.data,
-      token // Add token to the response if found in headers
-    };
+    // Return the response data regardless of token
+    return res.data;
   } catch (error: any) {
     console.error('Login API error:', error);
     throw new Error(error.response?.data?.error || 'Login failed');

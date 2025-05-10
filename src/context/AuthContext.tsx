@@ -58,15 +58,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       console.log("Attempting login for", email);
       
-      const response = await loginUser(email, password);
-      console.log("Login response received");
+      // Login API call will set HTTP-only cookie
+      await loginUser(email, password);
+      console.log("Login successful, cookie should be set");
       
-      // If token is in response, save it to localStorage
-      if (response.token) {
-        console.log("Token found in response, storing in localStorage");
-        localStorage.setItem('token', response.token);
-        
-        // Verify the user to get user data
+      // Generate a marker in localStorage
+      localStorage.setItem('token', `auth-session-${Date.now()}`);
+      
+      // Verify the user to get user data using the cookie
+      try {
         const userData = await verifyUser();
         console.log("User verification completed");
         
@@ -79,9 +79,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error("Invalid user data after verification");
           throw new Error("Authentication failed after login");
         }
-      } else {
-        console.error("No token received in login response");
-        throw new Error("No authentication token received");
+      } catch (verifyErr) {
+        console.error("Error during verification:", verifyErr);
+        throw verifyErr;
       }
     } catch (err: any) {
       console.error("Login error:", err);
