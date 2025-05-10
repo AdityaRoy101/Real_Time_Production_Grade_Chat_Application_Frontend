@@ -60,3 +60,20 @@ export const verifyUser = async () => {
     throw new Error(error.response?.data?.error || 'Authentication failed');
   }
 };
+
+export const verifyToken = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      return null;
+    }
+    
+    // Use POST request with token in body
+    const response = await api.post('/api/v1/auth/verify', { token });
+    return response.data;
+  } catch (error) {
+    localStorage.removeItem('token');
+    return null;
+  }
+};
