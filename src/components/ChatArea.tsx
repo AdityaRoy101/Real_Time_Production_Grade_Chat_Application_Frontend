@@ -14,7 +14,7 @@ import {
   useColorModeValue,
   Image,
 } from '@chakra-ui/react';
-import { ArrowBackIcon, AttachmentIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, AttachmentIcon, ChatIcon } from '@chakra-ui/icons';
 import { useChat } from '../context/ChatContext';
 import { useAuth } from '../context/AuthContext';
 import MessageBubble from './MessageBubble';
@@ -300,20 +300,23 @@ const ChatArea = () => {
           right={0} 
           bottom={0}
           opacity={0.05}
-          bgImage="url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be8374b5f565fa3f473e05dbbe8c3a.png')"
-          bgRepeat="repeat"
+          bg="gray.100"  // Simple solid color background
           zIndex={-1}
         />
-        <Image 
-          src="https://web.whatsapp.com/img/intro-connection-light_c98cc75f2aa905314d74375a975d2cf2.jpg" 
-          boxSize="240px"
+        <Box
+          width="240px"
+          height="240px" 
           borderRadius="full"
-          opacity={0.8}
-        />
+          bg="teal.100"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <ChatIcon boxSize="100px" color="teal.500" />
+        </Box>
         <Text color="gray.500" fontSize="2xl" fontWeight="medium">Chat App</Text>
         <Text color="gray.400" fontSize="md" maxW="500px" textAlign="center">
           Select a conversation to start chatting or find new users in the Users tab
-          Note: While adding new users you have to refresh the page to see them in the chat list
         </Text>
       </Center>
     );
