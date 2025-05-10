@@ -72,7 +72,7 @@ export const sendMessageApi = async (conversationId: string, sender: string, rec
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
     
-    const response = await api.post('/api/v1/chat/message', {
+    const response = await api.post('/api/v1/chat/messages', {
       conversationId,
       sender,
       recipient,
