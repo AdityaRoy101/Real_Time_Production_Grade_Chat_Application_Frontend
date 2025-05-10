@@ -88,6 +88,12 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
+    // Validate token is a proper JWT (should be a long string, not a placeholder)
+    if (token.startsWith('auth-session-')) {
+      console.error('Invalid token format for socket connection');
+      return;
+    }
+    
     console.log('Creating new socket connection with token');
     const newSocket = io(SOCKET_URL, {
       auth: { token },

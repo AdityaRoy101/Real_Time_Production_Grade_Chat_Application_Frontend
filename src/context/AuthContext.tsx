@@ -33,7 +33,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         
-        console.log("Token found, verifying...");
+        // Check if token is a placeholder value instead of JWT
+        if (token.startsWith('auth-session-')) {
+          console.warn("Found placeholder token instead of JWT, authentication will fail");
+          localStorage.removeItem('token');
+          setLoading(false);
+          return;
+        }
+        
+        console.log("JWT token found, verifying...");
         const userData = await verifyUser();
         if (userData && userData._id) {
           console.log("User verified successfully:", userData._id);
@@ -58,14 +66,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       console.log("Attempting login for", email);
       
-      // Login API call will set HTTP-only cookie
-      await loginUser(email, password);
-      console.log("Login successful, cookie should be set");
+      // Login API call should return token in response
+      const loginResponse = await loginUser(email, password);
+      console.log("Login response received", loginResponse);
       
-      // Generate a marker in localStorage
-      localStorage.setItem('token', `auth-session-${Date.now()}`);
+      if (loginResponse.error) {
+        setError(loginResponse.error);
+        return false;
+      }
       
-      // Verify the user to get user data using the cookie
+      // Store the actual JWT token from the response
+      if (loginResponse.token) {
+        console.log("JWT token received, storing in localStorage");
+        localStorage.setItem('token', loginResponse.token);
+      } else {
+        console.error("No token received in login response");
+        return false;
+      }
+      
+      // Verify the user to get user data using the JWT token
       try {
         const userData = await verifyUser();
         console.log("User verification completed");

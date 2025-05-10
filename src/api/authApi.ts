@@ -27,24 +27,28 @@ export const registerUser = async (name: string, email: string, password: string
 export const verifyUser = async () => {
   try {
     console.log("Verifying user authentication...");
-    const res = await api.get('/api/v1/auth/verify');
-    console.log("Verification result:", res.data);
     
-    // Extract token from Authorization header if available
-    const authHeader = res.headers?.authorization || res.headers?.Authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      return {
-        ...res.data,
-        token // Add token to user data if found in headers
-      };
+    // Get the token from localStorage
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      console.error("No token found in localStorage");
+      throw new Error("No authentication token found");
     }
     
+    // Make the request with the token in the Authorization header
+    const res = await api.get('/api/v1/auth/verify', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    console.log("Verification result:", res.data);
     return res.data;
   } catch (error: any) {
     console.error('Verification error:', error);
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken'); // Clear invalid token
+      localStorage.removeItem('token');
     }
     throw new Error(error.response?.data?.error || 'Authentication failed');
   }
