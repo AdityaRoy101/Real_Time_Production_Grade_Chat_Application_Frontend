@@ -85,8 +85,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
         
     const newSocket = io(SOCKET_URL, {
-      auth: { token },
-      withCredentials: true,
+      // For Socket.IO, use both approaches for maximum compatibility
+      auth: { token: localStorage.getItem('authToken') || '' },
+      withCredentials: true, // This will send cookies
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,

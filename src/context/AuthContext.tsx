@@ -42,32 +42,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setError(null);
       console.log("Logging in...");
+      
+      // First, make login API call which sets an HTTP-only cookie
       const response = await loginUser(email, password);
       
       console.log("Login response:", response);
       
-      // Store token in localStorage
-      if (response && response.token) {
+      // Store a token copy in localStorage (for socket.io)
+      // If backend also sends token in response body, use that
+      // Otherwise, generate a dummy token just for socket.io
+      if (response?.token) {
         localStorage.setItem('authToken', response.token);
-        
-        console.log("Token stored, verifying user...");
-        try {
-          const userData = await verifyUser();
-          console.log("User verification result:", userData);
-          
-          if (userData && userData._id) {
-            setUser(userData);
-            console.log("User set in state, navigating to home");
-            navigate('/');
-          } else {
-            throw new Error("Invalid user data received from verification");
-          }
-        } catch (verifyErr) {
-          console.error("Verification error:", verifyErr);
-          setError("Authentication failed after login. Please try again.");
-        }
       } else {
-        throw new Error("No token received from server");
+        // Create a timestamp-based token marker 
+        localStorage.setItem('authToken', `session-${Date.now()}`);
+      }
+      
+      // Verify the user (this will use the HTTP-only cookie automatically)
+      console.log("Verifying user...");
+      try {
+        const userData = await verifyUser();
+        console.log("User verification result:", userData);
+        
+        if (userData && userData._id) {
+          setUser(userData);
+          console.log("User set in state, navigating to home");
+          navigate('/');
+        } else {
+          throw new Error("Invalid user data received from verification");
+        }
+      } catch (verifyErr) {
+        console.error("Verification error:", verifyErr);
+        setError("Authentication failed after login. Please try again.");
       }
     } catch (err: any) {
       console.error("Login error:", err);
