@@ -313,6 +313,7 @@ const ChatArea = () => {
         <Text color="gray.500" fontSize="2xl" fontWeight="medium">Chat App</Text>
         <Text color="gray.400" fontSize="md" maxW="500px" textAlign="center">
           Select a conversation to start chatting or find new users in the Users tab
+          Note: While adding new users you have to refresh the page to see them in the chat list
         </Text>
       </Center>
     );
