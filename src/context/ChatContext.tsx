@@ -74,6 +74,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) return;
     
+    console.log("Attempting to connect socket to:", SOCKET_URL);
+    
     const getCookie = (name: string) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
@@ -81,8 +83,13 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       return null;
     };
     
-    const token = getCookie('token');
-    if (!token) return;
+    // Try localStorage for token first, fall back to cookie
+    const token = localStorage.getItem('authToken') || getCookie('token');
+    if (!token) {
+      console.error("No auth token found in localStorage or cookies");
+      setLoading(false); // Prevent infinite spinner
+      return;
+    }
         
     const newSocket = io(SOCKET_URL, {
       auth: { token },
@@ -95,12 +102,17 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       transports: ['websocket', 'polling']
     });
     
+    // Add socket connection debugging
     newSocket.on('connect', () => {
+      console.log("Socket connected successfully!");
       newSocket.emit('get_online_users');
     });
     
+    // More detailed socket error logging
     newSocket.on('connect_error', (err) => {
       console.error('Socket connection error:', err.message);
+      // Ensure we don't get stuck in loading state on socket error
+      setLoading(false);
     });
     
     newSocket.on('disconnect', (reason) => {
@@ -108,9 +120,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         newSocket.connect();
       }
     });
-    
-    // newSocket.on('reconnect', (attemptNumber) => {
-    // });
     
     setSocket(newSocket);
     
@@ -125,14 +134,17 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const getConversations = async () => {
       try {
         console.log("Fetching conversations...");
-        console.log(`User: ${user}`);
-        const conversationsData = await fetchConversations(user?._id);
+        console.log(`User ID: ${user?._id}`); // Fixed log to show actual ID
+        
+        // Add token from localStorage as an alternative to cookies
+        const token = localStorage.getItem('authToken');
+        const conversationsData = await fetchConversations(user?._id, token);
+        
         console.log("Conversations fetched successfully:", conversationsData);
         setConversations(conversationsData);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching conversations:', err);
-        // Add this to avoid getting stuck in the loading state
         setLoading(false);
       }
     };
@@ -296,6 +308,18 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       return () => clearTimeout(timer);
     }
   }, [currentConversation, messages.length, markMessagesAsRead]);
+
+  // Add a safety timeout to prevent endless spinner
+  useEffect(() => {
+    if (loading) {
+      const safetyTimeout = setTimeout(() => {
+        console.log("Forcing loading state to false after timeout");
+        setLoading(false);
+      }, 10000); // 10 seconds timeout
+      
+      return () => clearTimeout(safetyTimeout);
+    }
+  }, [loading]);
   
   const sendMessage = async (content: string, recipientId: string) => {
     if (!socket || !user || !currentConversation) return;

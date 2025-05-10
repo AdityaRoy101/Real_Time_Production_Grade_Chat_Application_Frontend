@@ -41,14 +41,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       setError(null);
-      await loginUser(email, password);
+      const response = await loginUser(email, password);
       
-      // Verify user after login
-      const userData = await verifyUser();
-      
-      if (userData && userData._id) {
-        setUser(userData);
-        navigate('/');
+      // Store token in localStorage
+      if (response && response.token) {
+        localStorage.setItem('authToken', response.token);
+        
+        const userData = await verifyUser();
+        
+        if (userData && userData._id) {
+          setUser(userData);
+          navigate('/');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Login failed');
@@ -66,7 +70,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
+    // Clear both cookie and localStorage
     document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    localStorage.removeItem('authToken');
     setUser(null);
     navigate('/login');
   };
